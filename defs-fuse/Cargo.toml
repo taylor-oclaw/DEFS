@@ -1,0 +1,9 @@
+[package]
+name = "defs-fuse"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "DEFS FUSE driver — mount DEFS volumes on Linux/macOS"
+
+[dependencies]
+defs-core = { path = "../defs-core", features = ["fuse"] }

@@ -1,0 +1,14 @@
+[package]
+name = "defs-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "DEFS core filesystem — no_std compatible for kernel and FUSE use"
+
+[features]
+default = ["alloc"]
+alloc = []
+std = ["alloc"]
+kernel = ["alloc"]   # AuraOS kernel integration
+fuse = ["std"]        # FUSE driver integration
+vymatik = ["alloc"]   # VyMatik storage engine integration
