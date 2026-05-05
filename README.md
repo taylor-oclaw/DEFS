@@ -1,198 +1,124 @@
-# DEFS — Data-Enriched File System v2
+<div align="center">
 
-> The filesystem that understands your data.
+# DEFS
 
-DEFS is an AI-native, content-aware filesystem designed for the age of intelligent agents. Unlike traditional filesystems that treat files as dead blobs of bytes, DEFS stores every file as a **Particle** — a semantically rich, multi-dimensional object with typed properties, relationship graphs, and native AI metadata.
+### The Filesystem That Understands Your Data
 
-## Core Concepts
+**v1.0.0** — AI-native, content-aware storage with semantic relationships, block-level deduplication, and POSIX compatibility.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  HUMAN VIEW        │  AGENT VIEW        │  DATABASE VIEW    │
-│  (POSIX files)     │  (particles)       │  (VyMatik)        │
-├─────────────────────────────────────────────────────────────┤
-│  report.pdf        │  Particle {        │  Row in table     │
-│  /docs/budget.xlsx │    id: blake3(...) │  with columns:    │
-│                    │    dimensions: {   │    content,       │
-│                    │      "content":    │    name,          │
-│                    │        Wavelet,    │    content_type,  │
-│                    │      "name":       │    embedding...   │
-│                    │        Wavelet,    │                   │
-│                    │      "embedding":  │                   │
-│                    │        Wavelet     │                   │
-│                    │    },              │                   │
-│                    │    gravity: [      │  Graph edges:     │
-│                    │      Bond→related  │    related_to,    │
-│                    │    ]               │    derived_from   │
-│                    │  }                 │                   │
-└─────────────────────────────────────────────────────────────┘
-```
+[![Tests](https://img.shields.io/badge/tests-88%2F88%20passing-success)](https://github.com/taylor-oclaw/DEFS/actions)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/taylor-oclaw/DEFS/releases/tag/v1.0.0)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-orange)](./PATENTS.md)
 
-### Particle
-The atomic unit of DEFS. Replaces the traditional inode. Every file, directory, symlink, and data fragment is a Particle with:
-- **Dimensions** — typed properties (content, name, ACL, embedding, etc.)
-- **Gravity bonds** — relationships to other particles (Contains, DependsOn, RelatedTo, etc.)
-- **Content hash** — blake3 for integrity and deduplication
+[🌐 Marketing Site](./website/) · [⚙️ Engine](./engine/) · [📖 Architecture](./engine/ARCHITECTURE.md) · [📝 Changelog](./CHANGELOG.md)
 
-### Wavelet
-The encoded signal within a Dimension. Self-describing binary format with type tag, payload, and metadata.
+</div>
 
-### Singularity
-A dense cluster of particles where schema emerges. Replaces the traditional directory — not a container, but an emergent grouping based on dimensional correlation.
+---
 
-### Gravity
-Defines how particles relate. Typed, weighted bonds enable graph traversal, semantic search, and relationship discovery.
+## What is DEFS?
 
-## Architecture
+DEFS (Data-Enriched File System) reimagines storage for the age of intelligent agents. Instead of treating files as dead blobs of bytes, DEFS stores every file as a **Particle** — a semantically rich object with:
+
+- **Dimensions** — typed properties (content, name, permissions, embeddings)
+- **Gravity Bonds** — relationships between files (Contains, DependsOn, RelatedTo, etc.)
+- **Content Hashing** — blake3 for integrity and automatic deduplication
+- **CoW Snapshots** — copy-on-write versioning built-in
+
+You see normal files. DEFS sees meaning.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  Application / Agent Layer                                   │
-│  POSIX │ Agent API │ VyMatik Query                          │
-├─────────────────────────────────────────────────────────────┤
-│  Prism Layer (Multiple Projections)                          │
-│  POSIX Prism │ Agent Prism │ Database Prism                  │
-├─────────────────────────────────────────────────────────────┤
-│  Particle Store + Gravity Index                              │
-├─────────────────────────────────────────────────────────────┤
-│  Journal │ CoW │ Deduplication │ Decay │ Prefetch           │
-├─────────────────────────────────────────────────────────────┤
-│  Block Layer: Allocator │ Compression                        │
-├─────────────────────────────────────────────────────────────┤
-│  Disk / NVMe / Block Device                                  │
-└─────────────────────────────────────────────────────────────┘
+HUMAN VIEW          AGENT VIEW
+─────────────       ──────────────────────────
+report.pdf    →     Particle {
+                      id: blake3(...),
+                      dimensions: {
+                        "content": Wavelet,
+                        "name": "report.pdf",
+                        "content_type": "application/pdf"
+                      },
+                      gravity: [
+                        Contains → /projects
+                      ]
+                    }
 ```
+
+## Performance
+
+| Metric | DEFS | SQLite | Advantage |
+|---|---|---|---|
+| Write 1K particles | ~221ms | ~671ms | **3× faster** |
+| Read 1K particles | ~219ns | ~6.43µs | **29× faster** |
 
 ## Quick Start
 
-### Build
 ```bash
-cargo build --release --all --features std
+# Install the CLI
+cargo install --path engine/defs-cli --features std
+
+# Create a volume
+defs mkfs my-volume.defs --label "My Data"
+
+# Use it like a filesystem
+defs mkdir my-volume.defs /projects
+defs write my-volume.defs /projects/hello.txt --data "Hello, DEFS!"
+defs cat my-volume.defs /projects/hello.txt
 ```
 
-### Run tests
-```bash
-cargo test --all --features std
-cargo test --all --features std,async-backend
-```
-
-### Create a volume
-```bash
-./target/release/defs mkfs my-volume.defs --label "My Data"
-```
-
-### VFS operations (POSIX-style)
-```bash
-# List files and directories
-./target/release/defs ls my-volume.defs /
-
-# Read file content
-./target/release/defs cat my-volume.defs /report.txt
-
-# Create directories
-./target/release/defs mkdir my-volume.defs /projects
-
-# Write files
-./target/release/defs write my-volume.defs /projects/hello.txt --data "Hello, DEFS!"
-./target/release/defs write my-volume.defs /projects/data.bin --input ./data.bin
-
-# Move/rename files
-./target/release/defs mv my-volume.defs /projects/hello.txt /projects/greeting.txt
-
-# Remove files and directories
-./target/release/defs rm my-volume.defs /projects/greeting.txt
-```
-
-### Snapshots
-```bash
-# Create a snapshot
-./target/release/defs snapshot my-volume.defs "before-upgrade"
-
-# List snapshots
-./target/release/defs snapshots my-volume.defs
-
-# Restore to a snapshot
-./target/release/defs restore my-volume.defs 1
-```
-
-### Maintenance
-```bash
-# Check volume health
-./target/release/defs fsck my-volume.defs
-
-# Reclaim leaked blocks
-./target/release/defs compact my-volume.defs
-
-# Show volume info and cache stats
-./target/release/defs info my-volume.defs
-./target/release/defs df my-volume.defs
-```
-
-## FUSE Mount (Linux)
+Or mount via FUSE:
 
 ```bash
-# Build with FUSE support
-cargo build -p defs-fuse --features fuse-mount
-
-# Mount as POSIX filesystem
-mkdir -p /mnt/defs
+cargo build --release -p defs-fuse --features fuse-mount
 ./target/release/defs-fuse my-volume.defs /mnt/defs
-
-# Use like a normal filesystem
-ls /mnt/defs
-cat /mnt/defs/report.txt
-cp /mnt/defs/report.txt ~/Desktop/
+ls /mnt/defs/projects/
 ```
 
 ## Project Structure
 
-| Crate | Description |
-|---|---|
-| `defs-core` | Core filesystem — `no_std` compatible particle store, gravity indexing, dedup, journal |
-| `defs-fuse` | FUSE driver for Linux/macOS (optional, requires libfuse3/macFUSE) |
-| `defs-cli` | Command-line interface for volume management |
+```
+DEFS/
+├── engine/          # Rust workspace — core filesystem, CLI, FUSE driver
+│   ├── defs-core/   # Core particle store, VFS, block layer
+│   ├── defs-cli/    # Command-line interface
+│   ├── defs-fuse/   # FUSE mount driver
+│   └── ARCHITECTURE.md
+├── website/         # Marketing site (static HTML/CSS/JS)
+├── CHANGELOG.md
+└── PATENTS.md
+```
 
 ## Features (v1.0)
 
-- ✅ **Content-addressable storage** — blake3 hashing for deduplication
-- ✅ **Particle model** — files as semantically rich objects with dimensions
-- ✅ **Gravity bonds** — typed, weighted relationships between particles
-- ✅ **Columnar dimension access** — read single properties without loading full particles
-- ✅ **Graph traversal** — follow gravity bonds with configurable depth
-- ✅ **Semantic search** — query by dimension values and content
-- ✅ **B+tree directory index** — O(log n) lookup for directory entries
-- ✅ **CoW snapshots** — copy-on-write versioning with snapshot/restore
-- ✅ **Journal / WAL** — crash-safe write-ahead logging
-- ✅ **Block-level deduplication** — content-addressed block sharing with ref counting
-- ✅ **Compaction** — reclaim leaked/orphaned blocks
-- ✅ **Fsck** — volume integrity checker with repair mode
-- ✅ **Block cache** — 64-block FIFO cache with hit/miss metrics
-- ✅ **FUSE driver** — POSIX compatibility layer (fsync, chmod, chown)
-- ✅ **Async backend** — `AsyncStorageBackend` trait for tokio integration
-- ✅ **CLI tool** — mkfs, VFS commands, snapshots, compact, fsck, info
-- ✅ **no_std support** — kernel-ready for AuraOS integration
-- 🔄 **Intelligence layer** — AI metadata, semantic search, prefetch (planned v1.1)
-- 🔄 **Decay policies** — automatic lifecycle management (planned v1.1)
+- ✅ **Particle-based storage** — semantically rich files with dimensions
+- ✅ **Gravity bonds** — typed relationships between particles
+- ✅ **Block-level deduplication** — content-addressed sharing with ref counting
+- ✅ **CoW snapshots** — snapshot, restore, list
+- ✅ **WAL crash recovery** — write-ahead logging
+- ✅ **B+tree directory index** — O(log n) lookups
+- ✅ **Compaction & fsck** — reclaim leaks, repair volumes
+- ✅ **FUSE driver** — full POSIX compatibility
+- ✅ **Async backend** — tokio-compatible API
+- ✅ **no_std support** — kernel-ready for AuraOS
 
-## Comparison
+## Testing
 
-| Feature | ext4 | ZFS | APFS | **DEFS** |
-|---|---|---|---|---|
-| POSIX files | ✅ | ✅ | ✅ | ✅ |
-| Content-addressable | ❌ | ⚠️ dedup | ❌ | ✅ blake3 |
-| Semantic metadata | ❌ | ❌ | ❌ | ✅ native |
-| Relationship graph | ❌ | ❌ | ❌ | ✅ gravity |
-| AI model awareness | ❌ | ❌ | ❌ | ✅ layer-addressable |
-| Agent-native API | ❌ | ❌ | ❌ | ✅ |
-| Columnar access | ❌ | ❌ | ❌ | ✅ dimension read |
-| Persistent KV cache | ❌ | ❌ | ❌ | ✅ |
-| no_std / kernel | ❌ | ❌ | ❌ | ✅ |
-
-## Patents
-
-Novel inventions in DEFS are patent-pending through Suvayar LLC. See [PATENTS.md](PATENTS.md).
+```bash
+cd engine
+cargo test --all --features std          # 88 tests
+cargo test --all --features std,async-backend  # 89 tests
+```
 
 ## License
 
-MIT OR Apache-2.0 (core filesystem)
-Commercial license required for AI features (semantic tags, model store, prefetch, decay).
+- **Core filesystem** (defs-core, defs-cli, defs-fuse): MIT OR Apache-2.0
+- **AI features** (semantic tags, model store, prefetch, decay): Commercial license required
+
+Patent-pending through Suvayar LLC. See [PATENTS.md](./PATENTS.md) for the full portfolio.
+
+---
+
+<div align="center">
+
+Built with Rust 🦀
+
+</div>

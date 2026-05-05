@@ -13,6 +13,9 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
     steps:
     - uses: actions/checkout@v4
     - name: Install Rust
@@ -21,17 +24,17 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.cargo/registry
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('engine/**/Cargo.lock') }}
     - name: Cache cargo index
       uses: actions/cache@v4
       with:
         path: ~/.cargo/git
-        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('engine/**/Cargo.lock') }}
     - name: Cache cargo build
       uses: actions/cache@v4
       with:
-        path: target
-        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+        path: engine/target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('engine/**/Cargo.lock') }}
     - name: Build
       run: cargo build --all --features std --verbose
     - name: Run tests
@@ -44,6 +47,9 @@ jobs:
   test-no-std:
     name: Test no_std
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
     steps:
     - uses: actions/checkout@v4
     - name: Install Rust
@@ -54,6 +60,9 @@ jobs:
   benchmark:
     name: Benchmark
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
     steps:
     - uses: actions/checkout@v4
     - name: Install Rust
