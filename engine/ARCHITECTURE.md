@@ -349,7 +349,7 @@ defs-core = { version = "0.1", features = ["vymatik"] }
 
 ## 9. Patents (Suvayar LLC)
 
-Novel inventions in DEFS — see [PATENTS.md](PATENTS.md) for the full portfolio of 13 inventions including:
+Novel inventions in DEFS — see [PATENTS.md](../docs/PATENTS.md) for the full portfolio of 13 inventions including:
 - Particle-based content-addressable filesystem
 - Gravity bond relationship system
 - Resonance-dimensional metadata encoding

@@ -8,9 +8,9 @@
 
 [![Tests](https://img.shields.io/badge/tests-88%2F88%20passing-success)](https://github.com/taylor-oclaw/DEFS/actions)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/taylor-oclaw/DEFS/releases/tag/v1.0.0)
-[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-orange)](./PATENTS.md)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-orange)](./docs/PATENTS.md)
 
-[🌐 Marketing Site](./website/) · [⚙️ Engine](./engine/) · [📖 Architecture](./engine/ARCHITECTURE.md) · [📝 Changelog](./CHANGELOG.md)
+[🌐 Marketing Site](./website/) · [⚙️ Engine](./engine/) · [📖 Architecture](./engine/ARCHITECTURE.md) · [📝 Changelog](./docs/CHANGELOG.md)
 
 </div>
 
@@ -83,8 +83,11 @@ DEFS/
 │   ├── defs-fuse/   # FUSE mount driver
 │   └── ARCHITECTURE.md
 ├── website/         # Marketing site (static HTML/CSS/JS)
-├── CHANGELOG.md
-└── PATENTS.md
+├── docs/
+│   ├── CHANGELOG.md
+│   ├── PATENTS.md
+│   ├── CODE_OF_CONDUCT.md
+│   └── CONTRIBUTING.md
 ```
 
 ## Features (v1.0)
@@ -113,7 +116,7 @@ cargo test --all --features std,async-backend  # 89 tests
 - **Core filesystem** (defs-core, defs-cli, defs-fuse): MIT OR Apache-2.0
 - **AI features** (semantic tags, model store, prefetch, decay): Commercial license required
 
-Patent-pending through Suvayar LLC. See [PATENTS.md](./PATENTS.md) for the full portfolio.
+Patent-pending through Suvayar LLC. See [PATENTS.md](./docs/PATENTS.md) for the full portfolio.
 
 ---
 

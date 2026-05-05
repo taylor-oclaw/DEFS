@@ -29,7 +29,7 @@
 //! - `vymatik` feature: VyMatik storage engine backend
 //!
 //! ## Patents (Suvayar LLC)
-//! Multiple novel inventions are patent-pending. See PATENTS.md.
+//! Multiple novel inventions are patent-pending. See docs/PATENTS.md.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
