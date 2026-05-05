@@ -5,6 +5,18 @@ edition.workspace = true
 authors.workspace = true
 description = "DEFS core filesystem — no_std compatible for kernel and FUSE use"
 
+[dependencies]
+blake3 = { version = "1.5", default-features = false, features = ["pure"] }
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
+lz4_flex = { version = "0.11", default-features = false, features = ["frame"] }
+async-trait = { version = "0.1", optional = true }
+
+[dev-dependencies]
+criterion = { workspace = true }
+rusqlite = "0.32"
+tempfile = "3"
+tokio = { version = "1", features = ["macros", "rt"] }
+
 [features]
 default = ["alloc"]
 alloc = []
@@ -12,3 +24,8 @@ std = ["alloc"]
 kernel = ["alloc"]   # AuraOS kernel integration
 fuse = ["std"]        # FUSE driver integration
 vymatik = ["alloc"]   # VyMatik storage engine integration
+async-backend = ["std", "dep:async-trait"]
+
+[[bench]]
+name = "store_bench"
+harness = false

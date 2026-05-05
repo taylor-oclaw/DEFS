@@ -1,6 +1,3 @@
-use alloc::vec::Vec;
-use alloc::string::String;
-
 pub const DEFS_MAGIC: u64 = 0x4445465346533031;
 pub const BLOCK_SIZE: u32 = 4096;
 
@@ -8,7 +5,7 @@ pub const BLOCK_SIZE: u32 = 4096;
 pub enum FsState {
     Clean,
     Dirty,
-    Error
+    Error,
 }
 
 pub struct Superblock {
@@ -28,7 +25,12 @@ pub struct Superblock {
     pub state: FsState,
     pub label: [u8; 64],
     pub uuid: [u8; 16],
-    pub features: u64
+    pub features: u64,
+    pub encoding_version: u32,
+    pub root_singularity: u64,
+    pub particle_index_block: u64,
+    pub snapshot_table_block: u64,
+    pub dedup_table_block: u64,
 }
 
 pub const FEAT_JOURNAL: u64 = 1;
@@ -61,8 +63,13 @@ impl Superblock {
             last_write_time: 0,
             state: FsState::Clean,
             label: sb_label,
-            uuid: [0u8; 16], // UUID should be generated in a real implementation
+            uuid: [0u8; 16],
             features: 0,
+            encoding_version: 1,
+            root_singularity: 1,
+            particle_index_block: 0,
+            snapshot_table_block: 0,
+            dedup_table_block: 0,
         }
     }
 

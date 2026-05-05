@@ -1,6 +1,4 @@
-use alloc::string::String;
 use alloc::boxed::Box;
-use alloc::vec::Vec;
 use alloc::string::String;
 
 pub type InodeNum = u64;

@@ -6,4 +6,17 @@ authors.workspace = true
 description = "DEFS FUSE driver — mount DEFS volumes on Linux/macOS"
 
 [dependencies]
-defs-core = { path = "../defs-core", features = ["fuse"] }
+defs-core = { path = "../defs-core", features = ["std", "fuse"] }
+serde_json = "1.0"
+
+[dependencies.fuser]
+version = "0.15"
+optional = true
+
+[dependencies.libc]
+version = "0.2"
+optional = true
+
+[features]
+default = []
+fuse-mount = ["fuser", "libc"]

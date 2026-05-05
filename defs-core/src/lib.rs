@@ -1,30 +1,23 @@
-//! # DEFS — Data-Enriched File System
+//! # DEFS — Data-Enriched File System v2
 //!
-//! An AI-native, content-aware filesystem designed for the age of agents.
-//!
-//! ## Features
-//! - **Journaling** — crash-safe writes with WAL
-//! - **Extent-based** — contiguous block allocation
-//! - **B-tree directories** — O(log n) lookups
-//! - **Content-addressable dedup** — automatic block deduplication
-//! - **Semantic tags** — AI-generated metadata per file
-//! - **Model-aware storage** — layer-addressable AI model files
-//! - **Predictive prefetch** — learns access patterns
-//! - **CoW snapshots** — continuous versioning with rollback
-//! - **Decay policies** — automatic lifecycle management
+//! An AI-native, content-aware filesystem where every file is a Particle,
+//! every property is a Dimension, every value is a Wavelet,
+//! and directories are replaced by Singularities that emerge from Gravity bonds.
 //!
 //! ## Architecture
 //! ```text
 //! ┌─────────────────────────────────────────┐
 //! │           Application / Agent            │
+//! │  (POSIX, Agent API, VyMatik Query)       │
 //! ├─────────────────────────────────────────┤
-//! │    VFS Layer (POSIX or Aether native)    │
+//! │    Prism Layer (Multiple Projections)    │
+//! │  POSIX │ Agent Native │ Database         │
 //! ├─────────────────────────────────────────┤
-//! │  Intelligence: Prefetch │ Dedup │ Decay  │
+//! │         Particle Store + Gravity         │
 //! ├─────────────────────────────────────────┤
-//! │  Storage: Inodes │ Journal │ B-Tree      │
+//! │  Journal │ CoW │ Deduplication │ Decay   │
 //! ├─────────────────────────────────────────┤
-//! │  Block Layer: Allocator │ Extents        │
+//! │  Block Layer: Allocator │ Compression    │
 //! ├─────────────────────────────────────────┤
 //! │           Disk / Block Device            │
 //! └─────────────────────────────────────────┘
@@ -43,22 +36,39 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-pub mod super_block;
-pub mod inode;
-pub mod journal;
-pub mod btree;
 pub mod alloc_bitmap;
-pub mod dedup;
-pub mod model;
-pub mod snapshot;
-pub mod prefetch;
+pub mod backend;
+pub mod btree;
+pub mod compress;
 pub mod decay;
+pub mod dedup;
+pub mod embed;
+pub mod format;
+pub mod fsck;
+pub mod hnsw;
+pub mod intelligence;
+pub mod journal;
+pub mod model;
+pub mod particle;
+pub mod persist;
+pub mod prefetch;
+pub mod snapshot;
+pub mod store;
+pub mod stress_tests;
+pub mod super_block;
+pub mod text;
 pub mod vfs;
+pub mod volume;
+pub mod wal;
 
-// Re-export key types
-pub use super_block::{Superblock, FsState, DEFS_MAGIC, BLOCK_SIZE};
-pub use inode::{Inode, InodeNum, FileType, ContentType};
-pub use journal::Journal;
+// Re-export core types
 pub use btree::BTreeNode;
 pub use dedup::DedupEngine;
+pub use format::{PageHeader, PageType, ParticleRecord, WaveletRecord, crc32};
+pub use journal::Journal;
+pub use particle::{
+    GravityBond, GravityKind, Particle, ParticleId, Resonance, SemanticRole, Singularity, TypeTag,
+    Wavelet, WaveletMetadata,
+};
+pub use super_block::{BLOCK_SIZE, DEFS_MAGIC, FsState, Superblock};
 pub use vfs::DefsVfs;

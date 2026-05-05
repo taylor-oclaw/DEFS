@@ -1,7 +1,5 @@
-use alloc::vec::Vec;
-use alloc::string::String;
 use alloc::vec;
-
+use alloc::vec::Vec;
 pub type BlockNum = u64;
 
 pub struct BlockBitmap {
@@ -85,5 +83,21 @@ impl BlockBitmap {
             return 0;
         }
         ((self.total_blocks - self.free_count) * 100 / self.total_blocks) as u8
+    }
+
+    pub fn count_free(&self) -> u64 {
+        self.free_count
+    }
+
+    /// Recalculate free_count by scanning all bits.
+    /// Call this after loading bitmap data from disk.
+    pub fn recount_free(&mut self) {
+        let mut free = 0u64;
+        for i in 0..self.total_blocks {
+            if self.is_free(i) {
+                free += 1;
+            }
+        }
+        self.free_count = free;
     }
 }

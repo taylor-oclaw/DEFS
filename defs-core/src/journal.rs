@@ -1,6 +1,4 @@
 use alloc::vec::Vec;
-use alloc::string::String;
-
 pub type BlockNum = u64;
 
 pub enum JournalOp {
@@ -10,14 +8,14 @@ pub enum JournalOp {
     FreeBlock { block: BlockNum },
     AllocInode { inode: u64 },
     FreeInode { inode: u64 },
-    UpdateSuperblock { data: Vec<u8> }
+    UpdateSuperblock { data: Vec<u8> },
 }
 
 pub struct JournalEntry {
     pub seq: u64,
     pub transaction_id: u64,
     pub ops: Vec<JournalOp>,
-    pub committed: bool
+    pub committed: bool,
 }
 
 pub struct Journal {
@@ -27,7 +25,7 @@ pub struct Journal {
     pub next_seq: u64,
     pub next_txn: u64,
     pub head: u64,
-    pub tail: u64
+    pub tail: u64,
 }
 
 impl Journal {
@@ -39,7 +37,7 @@ impl Journal {
             next_seq: 1,
             next_txn: 1,
             head: 0,
-            tail: 0
+            tail: 0,
         }
     }
 
@@ -50,7 +48,7 @@ impl Journal {
             seq: self.next_seq,
             transaction_id: txn,
             ops: Vec::new(),
-            committed: false
+            committed: false,
         });
         self.next_seq += 1;
         txn
