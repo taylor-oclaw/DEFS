@@ -4,7 +4,7 @@
 
 1. **Semantic content-aware filesystem with AI-generated metadata tagging**
    Files automatically tagged with content-derived metadata (e.g., "sunset, beach, 2026")
-   
+
 2. **Layer-addressable model storage for neural network filesystems**
    Access individual transformer layers without loading the full model file
 
@@ -35,6 +35,29 @@
 
 13. **Unified storage-and-query engine eliminating the database-filesystem boundary**
     Filesystem natively stores, indexes, and queries structured data without an intermediary database layer.
+
+## v1.0 Implementation Patents (New — Filed Pending)
+
+14. **Dimension-level deduplication with reference counting in a particle filesystem**
+    Content-addressed dimension blocks shared across particles via blake3 hash → block mapping with automatic ref-count lifecycle management.
+
+15. **Bidirectional gravity bond index for O(1) relationship traversal**
+    Maintains both outgoing and incoming bond indices, enabling reverse lookup of all particles referencing a target without full graph scan.
+
+16. **B+tree directory index serialized as a particle dimension**
+    Directory entries stored as a binary-serialized B+tree within a `__dir_index` wavelet dimension, enabling O(log n) lookup while preserving the particle model.
+
+17. **Copy-on-write snapshots with dedup table cloning**
+    Snapshot creation clones both the particle index chain AND the dedup table chain, ensuring consistent dedup reference counts across snapshot boundaries.
+
+18. **HNSW embedding index integrated into a POSIX-compatible filesystem**
+    Approximate nearest-neighbor vector search (HNSW) operating directly on particle embeddings stored as wavelet dimensions, with no external vector database required.
+
+19. **Singularity-based emergent schema clustering in a filesystem**
+    Automatic detection of particle clusters where dimensional correlation exceeds a threshold, creating emergent "singularities" that serve as schema-inferred groupings.
+
+20. **Compaction with dedup table reconstruction**
+    Volume compaction rewrites all particles while clearing and rebuilding the dedup table, ensuring reference counts remain accurate after block reclamation.
 
 ---
 
