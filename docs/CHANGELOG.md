@@ -2,6 +2,35 @@
 
 All notable changes to DEFS (Data-Enriched File System) are documented in this file.
 
+## [1.1.0] — 2026-05-07
+
+### Added — Semantic Search
+- **HNSW vector index** — Hierarchical Navigable Small World approximate nearest neighbor search with proper geometric distribution RNG
+- **Cosine & Euclidean distance** — Both similarity metrics supported; sorts descending for cosine, ascending for euclidean
+- **`ef_search` parameter** — Separate from `ef_construction` for query-time recall tuning
+- **HashSet visited tracking** — O(1) lookups instead of O(n) linear scan
+- **Serialization** — Compact binary format for index persistence via `to_bytes()` / `from_bytes()`
+- **CLI `defs find`** — Semantic search by query string with `--semantic` flag; falls back to dimension-contains
+- **CLI `defs similar`** — Find k-most-similar particles to a given path
+- **`build_embedding_index()`** — On-demand vector indexing from particle embeddings
+- **`search_semantic()`** / **`search_similar()`** — PersistentStore APIs for programmatic access
+
+### Added — Web Dashboard
+- **`defs-dashboard`** — New binary crate; zero-dependency HTTP server on configurable port (default 8765)
+- **Real-time volume stats** — Particle count, singularities, dimensions histogram, bond kinds, size/usage
+- **Particle browser** — Sortable table with ID, name, type, dimensions, bonds, incoming, modified time
+- **Interactive gravity graph** — Force-directed Canvas visualization with drag, zoom, hover tooltips; color-coded by type (directory, text, image, file)
+- **Search interface** — Contains, Equals, and Related-to search with dimension selector
+- **Single-page app** — Embedded HTML/CSS/JS; no external CDN dependencies
+
+### Added — API Improvements
+- **`ParticleId::from_hex()`** — Parse 64-char hex strings back to ParticleId
+- **`PersistentStore::singularity_count()`** — Expose singularity count for dashboards
+
+### Fixed
+- **HNSW `random_level()` bug** — Was deterministic; now uses proper geometric distribution with `rand::thread_rng()`
+- **HNSW entry point healing** — After removing the entry point, finds the highest-layer node instead of defaulting to index 0
+
 ## [1.0.0] — 2026-05-04
 
 ### Added — Core Storage

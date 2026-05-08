@@ -252,6 +252,14 @@ mod std_impl {
             Ok(())
         }
 
+        pub fn store(&self) -> &PersistentStore {
+            &self.store
+        }
+
+        pub fn store_mut(&mut self) -> &mut PersistentStore {
+            &mut self.store
+        }
+
         pub fn particle_count(&self) -> usize {
             self.store.particle_count()
         }

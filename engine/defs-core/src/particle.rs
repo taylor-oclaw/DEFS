@@ -35,6 +35,18 @@ impl ParticleId {
         }
         s
     }
+
+    pub fn from_hex(hex: &str) -> Option<Self> {
+        if hex.len() != 64 {
+            return None;
+        }
+        let mut bytes = [0u8; 32];
+        for i in 0..32 {
+            let byte_str = &hex[i * 2..i * 2 + 2];
+            bytes[i] = u8::from_str_radix(byte_str, 16).ok()?;
+        }
+        Some(Self(bytes))
+    }
 }
 
 /// A Wavelet is the encoded signal within a Dimension.

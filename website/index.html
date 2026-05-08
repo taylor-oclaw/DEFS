@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DEFS — AI-Native Content-Aware Filesystem</title>
-  <meta name="description" content="DEFS v1.0 — AI-native, content-aware storage with semantic relationships, block-level deduplication, and POSIX compatibility.">
+  <meta name="description" content="DEFS v1.1 — AI-native filesystem with semantic search, web dashboard, HNSW vector index, block-level deduplication, and POSIX compatibility.">
   <style>
     :root {
       --bg: #0a0a0f;
@@ -529,9 +529,9 @@
       <canvas id="particles"></canvas>
     </div>
     <div class="hero-content">
-      <div class="hero-badge">DEFS v1.0 Now Available</div>
+      <div class="hero-badge">DEFS v1.1 — Semantic Search + Web Dashboard</div>
       <h1>The Filesystem That Understands Your Data</h1>
-      <p>DEFS v1.0 — AI-native, content-aware storage with semantic relationships, block-level deduplication, and POSIX compatibility.</p>
+      <p>DEFS v1.1 — AI-native filesystem with semantic search, web dashboard, HNSW vector index, block-level deduplication, and POSIX compatibility.</p>
       <div class="hero-ctas">
         <a href="#quickstart" class="btn btn-primary">Get Started &rarr;</a>
         <a href="https://github.com/taylor-oclaw/DEFS" target="_blank" rel="noopener" class="btn btn-secondary">View on GitHub &rarr;</a>
@@ -593,6 +593,20 @@
           </div>
           <h3>Async Backend</h3>
           <p>Fully async, tokio-compatible API. Built for modern Rust concurrency patterns from day one.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon pink">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <h3>Semantic Vector Search</h3>
+          <p>HNSW approximate nearest neighbor index with cosine &amp; euclidean distance. Find similar files by content meaning.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon violet">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>Web Dashboard</h3>
+          <p>Real-time filesystem visualization with interactive gravity graph, particle browser, and search. No dependencies.</p>
         </div>
       </div>
     </div>

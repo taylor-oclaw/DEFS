@@ -49,8 +49,10 @@ pub enum SearchQuery {
         kind: Option<GravityKind>,
         max_depth: u32,
     },
-    /// Semantic similarity (placeholder — requires embedding index)
-    Semantic { embedding: Vec<f32>, top_k: usize },
+    /// Semantic similarity search by query string
+    Semantic { query: String, k: usize },
+    /// Find particles similar to a given particle
+    SimilarTo { id: ParticleId, k: usize },
     /// Compound AND query
     And(Vec<SearchQuery>),
     /// Compound OR query
@@ -209,7 +211,11 @@ impl ParticleStore {
                 Ok(results)
             }
             SearchQuery::Semantic { .. } => {
-                // Placeholder: requires embedding index
+                // Placeholder: embedding index lives in PersistentStore
+                Ok(Vec::new())
+            }
+            SearchQuery::SimilarTo { .. } => {
+                // Placeholder: embedding index lives in PersistentStore
                 Ok(Vec::new())
             }
             SearchQuery::And(queries) => {

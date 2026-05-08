@@ -267,6 +267,67 @@ impl IntelligenceEngine {
             String::from(summary)
         }
     }
+
+    /// Generate a semantic embedding using bag-of-ngrams with random projection.
+    /// Extracts all 3-grams, hashes each to a deterministic seed, generates a
+    /// random unit vector, averages all vectors, and normalizes.
+    pub fn generate_embedding(&self, text: &str, dim: usize) -> Vec<f32> {
+        let mut accum = vec![0.0f32; dim];
+        let text_lower = text.to_lowercase();
+        let chars: Vec<char> = text_lower.chars().collect();
+        if chars.len() < 3 || dim == 0 {
+            return accum;
+        }
+
+        let ngram_count = chars.len() - 2;
+        for i in 0..ngram_count {
+            let ngram: String = chars[i..i + 3].iter().collect();
+            let hash = blake3::hash(ngram.as_bytes());
+            let vec = hash_to_unit_vector(hash.as_bytes(), dim);
+            for j in 0..dim {
+                accum[j] += vec[j];
+            }
+        }
+
+        // Average
+        let count = ngram_count as f32;
+        for j in 0..dim {
+            accum[j] /= count;
+        }
+
+        // Normalize
+        let norm = accum.iter().map(|v| v * v).sum::<f32>().sqrt();
+        if norm > 0.0 {
+            for j in 0..dim {
+                accum[j] /= norm;
+            }
+        }
+
+        accum
+    }
+}
+
+/// Deterministically map a 32-byte hash to a unit vector in `dim` dimensions.
+fn hash_to_unit_vector(hash: &[u8; 32], dim: usize) -> Vec<f32> {
+    let mut state = u64::from_le_bytes([
+        hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7],
+    ]);
+    let mut vec = vec![0.0f32; dim];
+    for i in 0..dim {
+        // xorshift64*
+        state ^= state << 13;
+        state ^= state >> 7;
+        state ^= state << 17;
+        let f = (state as f32 / u64::MAX as f32) * 2.0 - 1.0;
+        vec[i] = f;
+    }
+    let norm = vec.iter().map(|v| v * v).sum::<f32>().sqrt();
+    if norm > 0.0 {
+        for v in &mut vec {
+            *v /= norm;
+        }
+    }
+    vec
 }
 
 #[cfg(test)]

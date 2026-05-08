@@ -52,6 +52,26 @@ enum Commands {
         #[arg(short, long, default_value = "name")]
         dimension: String,
     },
+    /// Find particles by semantic similarity or dimension contains
+    Find {
+        /// Path to the volume file
+        path: PathBuf,
+        /// Search query
+        query: String,
+        /// Use semantic search
+        #[arg(long)]
+        semantic: bool,
+    },
+    /// Find particles similar to a given path
+    Similar {
+        /// Path to the volume file
+        path: PathBuf,
+        /// Target path inside the volume
+        target: String,
+        /// Number of results
+        #[arg(short, long, default_value = "5")]
+        k: usize,
+    },
     /// Enrich all particles with AI metadata
     Enrich {
         /// Path to the volume file
@@ -237,6 +257,12 @@ fn main() -> Result<()> {
             query,
             dimension,
         } => cmd_search(path, query, dimension),
+        Commands::Find {
+            path,
+            query,
+            semantic,
+        } => cmd_find(path, query, semantic),
+        Commands::Similar { path, target, k } => cmd_similar(path, target, k),
         Commands::Enrich { path } => cmd_enrich(path),
         Commands::Bonds { path, id } => cmd_bonds(path, id),
         Commands::Sync { path } => cmd_sync(path),
@@ -563,6 +589,55 @@ fn cmd_search(path: PathBuf, query: String, dimension: String) -> Result<()> {
         println!("  {} — {}", particle.id.to_hex(), name);
     }
 
+    Ok(())
+}
+
+fn cmd_find(path: PathBuf, query: String, semantic: bool) -> Result<()> {
+    let mut store = open_store(&path)?;
+
+    if semantic {
+        store.build_embedding_index();
+        let results = store.search_semantic(&query, 10)?;
+        println!("Found {} particle(s) by semantic similarity:", results.len());
+        for (id, score) in results {
+            if let Ok(p) = store.read(&id) {
+                let name = p.name().unwrap_or("(unnamed)");
+                println!("  {} — {} (score: {:.3})", id.to_hex(), name, score);
+            }
+        }
+    } else {
+        let results = store.search(&SearchQuery::DimensionContains {
+            name: String::from("name"),
+            substring: query,
+        })?;
+        println!("Found {} particle(s):", results.len());
+        for particle in results {
+            let name = particle.name().unwrap_or("(unnamed)");
+            println!("  {} — {}", particle.id.to_hex(), name);
+        }
+    }
+    Ok(())
+}
+
+fn cmd_similar(path: PathBuf, target: String, k: usize) -> Result<()> {
+    let mut vfs = open_vfs(&path)?;
+    let (_, particle) = vfs
+        .lookup(&target)
+        .with_context(|| format!("Target not found: {}", target))?;
+
+    let store = vfs.store_mut();
+    store.load_all()
+        .with_context(|| "Failed to load particles")?;
+    store.build_embedding_index();
+    let results = store.search_similar(&particle.id, k)?;
+
+    println!("Found {} particle(s) similar to '{}':", results.len(), target);
+    for (id, score) in results {
+        if let Ok(p) = store.read(&id) {
+            let name = p.name().unwrap_or("(unnamed)");
+            println!("  {} — {} (score: {:.3})", id.to_hex(), name, score);
+        }
+    }
     Ok(())
 }
 

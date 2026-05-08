@@ -149,6 +149,33 @@ impl EmbeddingIndex {
     pub fn hnsw_size(&self) -> usize {
         self.hnsw.len()
     }
+
+    /// Generate an embedding for a particle's text and insert it into the index
+    pub fn insert_particle(
+        &mut self,
+        id: &crate::particle::ParticleId,
+        text: &str,
+        engine: &crate::intelligence::IntelligenceEngine,
+    ) {
+        let embedding = engine.generate_embedding(text, self.dim);
+        self.insert(&id.to_hex(), embedding, "embedding");
+    }
+
+    /// Generate a query embedding and search for the top-k most similar particles
+    pub fn search_text(
+        &self,
+        text: &str,
+        engine: &crate::intelligence::IntelligenceEngine,
+        k: usize,
+    ) -> Vec<(crate::particle::ParticleId, f32)> {
+        let query = engine.generate_embedding(text, self.dim);
+        self.search_cosine(&query, k)
+            .into_iter()
+            .filter_map(|(id_hex, score)| {
+                crate::particle::ParticleId::from_hex(&id_hex).map(|id| (id, score))
+            })
+            .collect()
+    }
 }
 
 /// Quantize float32 vector to uint8 (for storage efficiency)
@@ -217,5 +244,28 @@ mod tests {
                 b
             );
         }
+    }
+
+    #[test]
+    fn test_semantic_search() {
+        use crate::intelligence::IntelligenceEngine;
+        use crate::particle::ParticleId;
+
+        let engine = IntelligenceEngine::new();
+        let mut index = EmbeddingIndex::new(128);
+
+        let id1 = ParticleId::from_content(b"doc1");
+        let id2 = ParticleId::from_content(b"doc2");
+        let id3 = ParticleId::from_content(b"doc3");
+
+        index.insert_particle(&id1, "User authentication and login logic", &engine);
+        index.insert_particle(&id2, "Database connection pooling configuration", &engine);
+        index.insert_particle(&id3, "Password hashing and session management", &engine);
+
+        let results = index.search_text("authentication mechanism", &engine, 2);
+
+        // The first result should be id1 (authentication and login)
+        assert!(!results.is_empty(), "Expected at least one result");
+        assert_eq!(results[0].0, id1, "Expected id1 to be the most similar");
     }
 }

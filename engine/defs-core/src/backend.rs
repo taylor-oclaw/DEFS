@@ -74,6 +74,20 @@ pub trait StorageBackend {
     /// Search
     fn search(&self, query: &SearchQuery) -> Result<Vec<Particle>, StoreError>;
 
+    /// Find particles semantically similar to a query string
+    fn search_semantic(
+        &self,
+        query: &str,
+        k: usize,
+    ) -> Result<Vec<(ParticleId, f32)>, StoreError>;
+
+    /// Find particles semantically similar to another particle
+    fn search_similar(
+        &self,
+        id: &ParticleId,
+        k: usize,
+    ) -> Result<Vec<(ParticleId, f32)>, StoreError>;
+
     /// Scan all particles
     fn scan(&self) -> Result<Vec<Particle>, StoreError>;
 
@@ -257,6 +271,16 @@ pub mod async_impl {
             kind: Option<GravityKind>,
         ) -> Result<Vec<(ParticleId, crate::particle::GravityBond)>, StoreError>;
         async fn search(&self, query: &SearchQuery) -> Result<Vec<Particle>, StoreError>;
+        async fn search_semantic(
+            &self,
+            query: &str,
+            k: usize,
+        ) -> Result<Vec<(ParticleId, f32)>, StoreError>;
+        async fn search_similar(
+            &self,
+            id: &ParticleId,
+            k: usize,
+        ) -> Result<Vec<(ParticleId, f32)>, StoreError>;
         async fn scan(&self) -> Result<Vec<Particle>, StoreError>;
         async fn begin_transaction(&self) -> Result<TransactionHandle, StoreError>;
         async fn commit(&self, txn: TransactionHandle) -> Result<(), StoreError>;
@@ -360,6 +384,24 @@ pub mod async_impl {
         async fn search(&self, query: &SearchQuery) -> Result<Vec<Particle>, StoreError> {
             let guard = self.inner.lock().unwrap();
             guard.search(query)
+        }
+
+        async fn search_semantic(
+            &self,
+            query: &str,
+            k: usize,
+        ) -> Result<Vec<(ParticleId, f32)>, StoreError> {
+            let guard = self.inner.lock().unwrap();
+            guard.search_semantic(query, k)
+        }
+
+        async fn search_similar(
+            &self,
+            id: &ParticleId,
+            k: usize,
+        ) -> Result<Vec<(ParticleId, f32)>, StoreError> {
+            let guard = self.inner.lock().unwrap();
+            guard.search_similar(id, k)
         }
 
         async fn scan(&self) -> Result<Vec<Particle>, StoreError> {

@@ -26,6 +26,8 @@ mod std_impl {
         particle_index: BTreeMap<ParticleId, u64>,
         dedup_table: HashMap<[u8; 32], (u64, u64)>,
         is_recovering: bool,
+        embedding_index: crate::embed::EmbeddingIndex,
+        intelligence: crate::intelligence::IntelligenceEngine,
     }
 
     impl PersistentStore {
@@ -43,6 +45,8 @@ mod std_impl {
                 particle_index: BTreeMap::new(),
                 dedup_table: HashMap::new(),
                 is_recovering: false,
+                embedding_index: crate::embed::EmbeddingIndex::new(128),
+                intelligence: crate::intelligence::IntelligenceEngine::new(),
             })
         }
 
@@ -71,6 +75,8 @@ mod std_impl {
                 particle_index,
                 dedup_table,
                 is_recovering: true,
+                embedding_index: crate::embed::EmbeddingIndex::new(128),
+                intelligence: crate::intelligence::IntelligenceEngine::new(),
             };
 
             for entry in recovered {
@@ -790,6 +796,10 @@ mod std_impl {
             self.store.all_particles()
         }
 
+        pub fn singularity_count(&self) -> usize {
+            self.store.singularity_count()
+        }
+
         /// Check if a particle exists in memory
         pub fn exists(&self, id: &ParticleId) -> bool {
             self.store.read(id).is_ok()
@@ -810,6 +820,60 @@ mod std_impl {
             let mut particle = self.store.read(id)?;
             particle.set_dimension(name, wavelet.clone());
             self.write(particle)
+        }
+
+        // ------------------------------------------------------------------
+        // Semantic search
+        // ------------------------------------------------------------------
+
+        /// Extract searchable text from a particle
+        fn particle_text(particle: &Particle) -> Option<String> {
+            particle
+                .dimension("_extracted_text")
+                .and_then(|w| w.as_str().map(String::from))
+                .or_else(|| particle.name().map(String::from))
+                .or_else(|| {
+                    particle
+                        .content()
+                        .and_then(|w| w.as_str().map(String::from))
+                })
+        }
+
+        /// Build the embedding index from all particles currently in memory
+        pub fn build_embedding_index(&mut self) {
+            self.embedding_index = crate::embed::EmbeddingIndex::new(128);
+            let particles: Vec<Particle> =
+                self.store.all_particles().iter().map(|p| (*p).clone()).collect();
+            for particle in particles {
+                if let Some(text) = Self::particle_text(&particle) {
+                    self.embedding_index
+                        .insert_particle(&particle.id, &text, &self.intelligence);
+                }
+            }
+        }
+
+        /// Semantic search by query string
+        pub fn search_semantic(
+            &self,
+            query: &str,
+            k: usize,
+        ) -> Result<Vec<(ParticleId, f32)>, StoreError> {
+            Ok(self.embedding_index.search_text(query, &self.intelligence, k))
+        }
+
+        /// Semantic search for particles similar to the given particle
+        pub fn search_similar(
+            &self,
+            id: &ParticleId,
+            k: usize,
+        ) -> Result<Vec<(ParticleId, f32)>, StoreError> {
+            let particle = self.read(id)?;
+            let text =
+                Self::particle_text(&particle).ok_or_else(|| StoreError::NotFound)?;
+            Ok(self.embedding_index.search_text(&text, &self.intelligence, k)
+                .into_iter()
+                .filter(|(result_id, _)| result_id != id)
+                .collect())
         }
 
         // ------------------------------------------------------------------
@@ -1261,6 +1325,22 @@ mod std_impl {
 
         fn scan(&self) -> Result<Vec<Particle>, StoreError> {
             self.scan()
+        }
+
+        fn search_semantic(
+            &self,
+            query: &str,
+            k: usize,
+        ) -> Result<Vec<(ParticleId, f32)>, StoreError> {
+            self.search_semantic(query, k)
+        }
+
+        fn search_similar(
+            &self,
+            id: &ParticleId,
+            k: usize,
+        ) -> Result<Vec<(ParticleId, f32)>, StoreError> {
+            self.search_similar(id, k)
         }
 
         fn begin_transaction(&mut self) -> Result<TransactionHandle, StoreError> {
